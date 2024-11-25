@@ -1,0 +1,2 @@
+diffprivlib==0.6.5
+syftbox==0.2.9
