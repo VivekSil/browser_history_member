@@ -15,7 +15,7 @@ uv pip install --upgrade -r requirements.txt --quiet
 
 # run app using python from venv
 echo "Running browser_history with $(python3 --version) at '$(which python3)'"
-sudo python3 main.py
+python3 test_main.py
 
 # deactivate the virtual environment
 deactivate

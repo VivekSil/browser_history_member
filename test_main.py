@@ -49,7 +49,10 @@ def save(path: str, browser_history: List[Dict], mode: str = "all"):
     elif mode == "scheme":
         with open(path, "w") as json_file:
             json.dump(
-                {"scheme_avg": len([bh["scheme"] for bh in browser_history if bh["scheme"] == "https"])c/len(browser_history), "timestamp": timestamp_str},
+                {
+                    "scheme_avg": len([bh["scheme"] for bh in browser_history if bh["scheme"] == "https"])/len(browser_history), 
+                    "timestamp": timestamp_str
+                },
                 json_file,
                 indent=4,
             )
