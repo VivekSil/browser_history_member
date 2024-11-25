@@ -1,7 +1,11 @@
 import os
 import sqlite3
 import platform
-from datetime import datetime, UTC, timedelta
+from datetime import datetime, timedelta
+from typing import List, Dict
+from pathlib import Path
+import shutil
+
 
 
 def fetch_safari_history() -> List[Dict]:
