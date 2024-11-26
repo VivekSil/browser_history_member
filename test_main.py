@@ -17,7 +17,8 @@ from browser_history import *
 API_NAME = "browser_history_member"
 AGGREGATOR_DATASITE = "aggregator@openmined.org"
 
-def split_url(url:List[str], private:bool = False):
+
+def split_url(url: List[str], private: bool = False):
     try:
         parsed_url = urlparse(url)
         components = {
@@ -36,6 +37,7 @@ def split_url(url:List[str], private:bool = False):
     except Exception as e:
         return {"error": str(e)}
 
+
 def save(path: str, browser_history: List[Dict], mode: str = "all"):
     current_time = datetime.utcnow()
     timestamp_str = current_time.strftime("%Y-%m-%d %H:%M:%S")
@@ -50,19 +52,29 @@ def save(path: str, browser_history: List[Dict], mode: str = "all"):
         with open(path, "w") as json_file:
             json.dump(
                 {
-                    "scheme_avg": len([bh["scheme"] for bh in browser_history if bh["scheme"] == "https"])/len(browser_history), 
-                    "timestamp": timestamp_str
+                    "scheme_avg": len(
+                        [
+                            bh["scheme"]
+                            for bh in browser_history
+                            if bh["scheme"] == "https"
+                        ]
+                    )
+                    / len(browser_history),
+                    "timestamp": timestamp_str,
                 },
                 json_file,
                 indent=4,
             )
 
+
 if __name__ == "__main__":
 
     # Get browser data
     combined_history = fetch_combined_history()
-    browser_history_private, browser_history_public = [split_url(urlstr["url"]) for urlstr in combined_history], [split_url(urlstr["url"], private=True) for urlstr in combined_history]
+    browser_history_private, browser_history_public = [
+        split_url(urlstr["url"]) for urlstr in combined_history
+    ], [split_url(urlstr["url"], private=True) for urlstr in combined_history]
 
-    save("./browser_history_private.json",browser_history_private)
-    save("./browser_history_public.json",browser_history_public)
-    save("./scheme_stats.json",browser_history_public, mode="scheme")
+    save("./browser_history_private.json", browser_history_private)
+    save("./browser_history_public.json", browser_history_public)
+    save("./scheme_stats.json", browser_history_public, mode="scheme")

@@ -18,7 +18,8 @@ from browser_history import *
 API_NAME = "browser_history_member"
 AGGREGATOR_DATASITE = "aggregator@openmined.org"
 
-def split_url(url:List[str], private:bool = False):
+
+def split_url(url: List[str], private: bool = False):
     try:
         parsed_url = urlparse(url)
         components = {
@@ -113,7 +114,7 @@ def should_run() -> bool:
             f.write(f"{int(now)}")
         return True
     return False
-   
+
 
 if __name__ == "__main__":
     if not should_run():
@@ -131,7 +132,9 @@ if __name__ == "__main__":
 
     # Get browser data
     combined_history = fetch_combined_history()
-    browser_history_private, browser_history_public = [split_url(urlstr["url"]) for urlstr in combined_history], [split_url(urlstr["url"], private=True) for urlstr in combined_history]
+    browser_history_private, browser_history_public = [
+        split_url(urlstr["url"]) for urlstr in combined_history
+    ], [split_url(urlstr["url"], private=True) for urlstr in combined_history]
 
     # Saving public browser history added in it.
     public_file: Path = restricted_public_folder / "browser_history.json"
