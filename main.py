@@ -21,12 +21,19 @@ AGGREGATOR_DATASITE = "aggregator@openmined.org"
 
 def split_url(url: List[str], private: bool = False):
     try:
+        # Parse the URL
         parsed_url = urlparse(url)
+
+        # Extract domain details using tldextract
+        extracted = tldextract.extract(url)
+
         components = {
             "scheme": parsed_url.scheme,
+            "subdomain": extracted.subdomain,
+            "domain": extracted.domain,
+            "tld": extracted.suffix,  # Top-level domain
             "netloc": parsed_url.netloc,
             "path": parsed_url.path,
-            "params": parsed_url.params,
             "query": parsed_url.query,
             "fragment": parsed_url.fragment,
         }
