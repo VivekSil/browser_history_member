@@ -24,7 +24,6 @@ def split_url(url: List[str], private: bool = False):
     try:
         # Parse the URL
         parsed_url = urlparse(url)
-
         # Extract domain details using tldextract
         extracted = tldextract.extract(url)
 
@@ -37,12 +36,15 @@ def split_url(url: List[str], private: bool = False):
             "path": parsed_url.path,
             "query": parsed_url.query,
             "fragment": parsed_url.fragment,
-            "classification": classify_url(parsed_url)
+            "classification": classify_url(url)
         }
         if private:
             if parsed_url.query:
                 components["query_params"] = parse_qs(parsed_url.query)
 
+        if components["classification"] != "general":
+            components["title"] = get_webpage_title(url)
+            
         return components
     except Exception as e:
         return {"error": str(e)}
@@ -139,20 +141,17 @@ if __name__ == "__main__":
     # Create private folder
     private_folder = create_private_folder(client.datasite_path)
 
-
-    # Get browser data
     combined_history = fetch_combined_history()
-    browser_history_private, browser_history_public = [
-        {"url": split_url(urlstr["url"]), "title": get_webpage_title(urlstr["url"]), "classification": classify_url(urlstr["url"])} for urlstr in combined_history
-    ], [
-        {"url": split_url(urlstr["url"], private=True), "title": get_webpage_title(urlstr["url"]), "classification": classify_url(urlstr["url"])} 
-        for urlstr in combined_history
-    ]
+    processed_history_private = [split_url(urlstr["url"], private=True) for urlstr in combined_history]
+    processed_history_public = [split_url(urlstr["url"]) for urlstr in combined_history]
 
+    filtered_history_private = [urlstr for urlstr in processed_history_private if urlstr["classification"] != "general" and urlstr["scheme"].lower() in {'http', 'https'}]
+    filtered_history_public = [urlstr for urlstr in processed_history_public if urlstr["classification"] != "general" and urlstr["scheme"].lower() in {'http', 'https'}]
+    
     # Saving public browser history added in it.
     public_file: Path = restricted_public_folder / "browser_history.json"
-    save(path=str(public_file), browser_history=browser_history_public)
+    save(path=str(public_file), browser_history=filtered_history_public)
 
     # Saving the private browser history.
     private_file: Path = private_folder / "browser_history.json"
-    save(path=str(private_file), browser_history=browser_history_private)
+    save(path=str(private_file), browser_history=filtered_history_private)
