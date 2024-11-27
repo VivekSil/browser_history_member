@@ -14,6 +14,7 @@ from typing import List, Dict
 import shutil
 from urllib.parse import urlparse, parse_qs
 from browser_history import *
+from educational_content_classifier import classify_url, get_webpage_title
 
 API_NAME = "browser_history_member"
 AGGREGATOR_DATASITE = "aggregator@openmined.org"
@@ -36,6 +37,7 @@ def split_url(url: List[str], private: bool = False):
             "path": parsed_url.path,
             "query": parsed_url.query,
             "fragment": parsed_url.fragment,
+            "classification": classify_url(parsed_url)
         }
         if private:
             if parsed_url.query:
@@ -137,11 +139,15 @@ if __name__ == "__main__":
     # Create private folder
     private_folder = create_private_folder(client.datasite_path)
 
+
     # Get browser data
     combined_history = fetch_combined_history()
     browser_history_private, browser_history_public = [
-        split_url(urlstr["url"]) for urlstr in combined_history
-    ], [split_url(urlstr["url"], private=True) for urlstr in combined_history]
+        {"url": split_url(urlstr["url"]), "title": get_webpage_title(urlstr["url"]), "classification": classify_url(urlstr["url"])} for urlstr in combined_history
+    ], [
+        {"url": split_url(urlstr["url"], private=True), "title": get_webpage_title(urlstr["url"]), "classification": classify_url(urlstr["url"])} 
+        for urlstr in combined_history
+    ]
 
     # Saving public browser history added in it.
     public_file: Path = restricted_public_folder / "browser_history.json"
