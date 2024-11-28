@@ -37,7 +37,7 @@ def split_url(url: List[str], private: bool = False):
             "path": parsed_url.path,
             "query": parsed_url.query,
             "fragment": parsed_url.fragment,
-            "classification": classify_url(url)
+            "classification": classify_url(url),
         }
         if private:
             if parsed_url.query:
@@ -45,7 +45,7 @@ def split_url(url: List[str], private: bool = False):
 
         if components["classification"] != "general":
             components["title"] = get_webpage_title(url)
-            
+
         return components
     except Exception as e:
         return {"error": str(e)}
@@ -72,7 +72,7 @@ def save(path: str, browser_history: List[Dict], mode: str = "all"):
                             if bh["scheme"] == "https"
                         ]
                     )
-                    / len(browser_history),
+                    / max(1, len(browser_history)),
                     "timestamp": timestamp_str,
                 },
                 json_file,
@@ -85,15 +85,27 @@ def add_title(urlstr):
 
     return urlstr
 
+
 if __name__ == "__main__":
 
     combined_history = fetch_combined_history()
-    processed_history_private = [split_url(urlstr["url"], private=True) for urlstr in combined_history]
+    processed_history_private = [
+        split_url(urlstr["url"], private=True) for urlstr in combined_history
+    ]
     processed_history_public = [split_url(urlstr["url"]) for urlstr in combined_history]
 
-    filtered_history_private = [urlstr for urlstr in processed_history_private if urlstr["classification"] != "general" and urlstr["scheme"].lower() in {'http', 'https'}]
-    filtered_history_public = [urlstr for urlstr in processed_history_public if urlstr["classification"] != "general" and urlstr["scheme"].lower() in {'http', 'https'}]
-    
+    filtered_history_private = [
+        urlstr
+        for urlstr in processed_history_private
+        if urlstr["classification"] != "general"
+        and urlstr["scheme"].lower() in {"http", "https"}
+    ]
+    filtered_history_public = [
+        urlstr
+        for urlstr in processed_history_public
+        if urlstr["classification"] != "general"
+        and urlstr["scheme"].lower() in {"http", "https"}
+    ]
 
     save("./browser_history_private.json", filtered_history_private)
     save("./browser_history_public.json", filtered_history_public)
