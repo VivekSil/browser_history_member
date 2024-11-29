@@ -14,11 +14,17 @@ import shutil
 from urllib.parse import urlparse, parse_qs
 from browser_history import *
 import tldextract
+import hashlib
 
 from educational_content_classifier import classify_url, get_webpage_title
 
 API_NAME = "browser_history_member"
 AGGREGATOR_DATASITE = "aggregator@openmined.org"
+
+
+def get_hash(url: str):
+    hashed_str = hashlib.sha256(url.encode("utf-8")).hexdigest()[:10]
+    return hashed_str
 
 
 def split_url(url: List[str], private: bool = False):
@@ -101,7 +107,7 @@ if __name__ == "__main__":
         and urlstr["scheme"].lower() in {"http", "https"}
     ]
     filtered_history_public = [
-        urlstr
+        get_hash(urlstr["domain"])
         for urlstr in processed_history_public
         if urlstr["classification"] != "general"
         and urlstr["scheme"].lower() in {"http", "https"}
@@ -109,4 +115,4 @@ if __name__ == "__main__":
 
     save("./browser_history_private.json", filtered_history_private)
     save("./browser_history_public.json", filtered_history_public)
-    save("./scheme_stats.json", filtered_history_public, mode="scheme")
+    save("./scheme_stats.json", filtered_history_private, mode="scheme")
