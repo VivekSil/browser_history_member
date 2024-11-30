@@ -12,13 +12,11 @@ from datetime import datetime, timedelta
 from typing import List, Dict
 import shutil
 from urllib.parse import urlparse, parse_qs
-from browser_history import *
+from src.browser_history import fetch_combined_history
 import tldextract
+from src.utils.config_reader import ConfigReader
 
-from educational_content_classifier import classify_url, get_webpage_title
-
-API_NAME = "browser_history_member"
-AGGREGATOR_DATASITE = "aggregator@openmined.org"
+from src.educational_content_classifier import classify_url, get_webpage_title
 
 
 def split_url(url: List[str], private: bool = False):
@@ -88,12 +86,17 @@ def add_title(urlstr):
 
 if __name__ == "__main__":
 
-    combined_history = fetch_combined_history()
+    print("Fetch combined history..")
+    path = Path("./data/History.db")
+    combined_history = fetch_combined_history(path)
+
+    print("Process history..")
     processed_history_private = [
         split_url(urlstr["url"], private=True) for urlstr in combined_history
     ]
     processed_history_public = [split_url(urlstr["url"]) for urlstr in combined_history]
 
+    print("Filter history..")
     filtered_history_private = [
         urlstr
         for urlstr in processed_history_private
@@ -107,6 +110,18 @@ if __name__ == "__main__":
         and urlstr["scheme"].lower() in {"http", "https"}
     ]
 
-    save("./browser_history_private.json", filtered_history_private)
-    save("./browser_history_public.json", filtered_history_public)
-    save("./scheme_stats.json", filtered_history_public, mode="scheme")
+    print("Save history..")
+    config_reader = ConfigReader()
+    temp_data_folder = config_reader.get_temp_data_folder()
+    save(f"{temp_data_folder}/browser_history_private.json", filtered_history_private)
+    save(f"{temp_data_folder}/browser_history_public.json", filtered_history_public)
+    save(f"{temp_data_folder}/scheme_stats.json", filtered_history_public, mode="scheme")
+
+    print("Compute Similarity between your own Private and Public history..")
+    history1 = Path(f"{temp_data_folder}/browser_history_private.json",)
+    history2 = Path(f"{temp_data_folder}/browser_history_public.json",)
+    results = compare_browser_histories(history1, history2)
+    print("Results:")
+    df_results = pd.DataFrame(results)
+    print(df_results.mean().mean())
+    # 0.8198000660078747
