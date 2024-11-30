@@ -13,6 +13,11 @@ from src.educational_content_classifier import classify_url, get_webpage_title
 from src.similarity import compare_browser_histories
 
 
+def get_hash(url: str):
+    hashed_str = hashlib.sha256(url.encode("utf-8")).hexdigest()[:10]
+    return hashed_str
+
+
 def split_url(url: List[str], private: bool = False):
     try:
         # Parse the URL
@@ -106,7 +111,7 @@ if __name__ == "__main__":
             and urlstr["scheme"].lower() in {"http", "https"}
         ]
         filtered_history_public = [
-            urlstr
+            urlstr # get_hash(urlstr["domain"])
             for urlstr in processed_history_public
             if urlstr["classification"] != "general"
             and urlstr["scheme"].lower() in {"http", "https"}
