@@ -13,12 +13,17 @@ from datetime import datetime, timedelta
 from typing import List, Dict
 import shutil
 from urllib.parse import urlparse, parse_qs
-from browser_history import *
-from educational_content_classifier import classify_url, get_webpage_title
+import tldextract
 
-API_NAME = "browser_history_member"
-AGGREGATOR_DATASITE = "aggregator@openmined.org"
+from src.browser_history import fetch_combined_history, 
+from src.educational_content_classifier import classify_url, get_webpage_title
+from src.utils.config_reader import ConfigReader
 
+config_reader = ConfigReader()
+
+API_NAME = config_reader.get_api_name()
+AGGREGATOR_DATASITE = config_reader.get_aggregator_datasite()
+INTERVAL = config_reader.get_interval()
 
 def split_url(url: List[str], private: bool = False):
     try:
@@ -36,7 +41,7 @@ def split_url(url: List[str], private: bool = False):
             "path": parsed_url.path,
             "query": parsed_url.query,
             "fragment": parsed_url.fragment,
-            "classification": classify_url(url)
+            "classification": classify_url(url),
         }
         if private:
             if parsed_url.query:
@@ -44,7 +49,7 @@ def split_url(url: List[str], private: bool = False):
 
         if components["classification"] != "general":
             components["title"] = get_webpage_title(url)
-            
+
         return components
     except Exception as e:
         return {"error": str(e)}
@@ -54,8 +59,10 @@ def create_restricted_public_folder(browser_history_path: Path) -> None:
     """
     Create an output folder for browser history data within the specified path.
 
-    This function creates a directory structure for storing browser history data under `api_data/browser_history`. If the directory
-    already exists, it will not be recreated. Additionally, default permissions for accessing the created folder are set using the
+    This function creates a directory structure for storing browser history data under
+    `api_data/browser_history`. If the directory
+    already exists, it will not be recreated. Additionally, default permissions for
+    accessing the created folder are set using the
     `SyftPermission` mechanism to allow the data to be read by an aggregator.
 
     Args:
@@ -74,9 +81,12 @@ def create_private_folder(path: Path) -> Path:
     """
     Create a private folder for browser history data within the specified path.
 
-    This function creates a directory structure for storing browser history data under `private/browser_history`.
-    If the directory already exists, it will not be recreated. Additionally, default permissions for
-    accessing the created folder are set using the `SyftPermission` mechanism, allowing the data to be
+    This function creates a directory structure for storing browser history data under
+    `private/browser_history`.
+    If the directory already exists, it will not be recreated. Additionally, default
+    permissions for
+    accessing the created folder are set using the `SyftPermission` mechanism, allowing
+    the data to be
     accessible only by the owner's email.
 
     Args:
@@ -108,7 +118,6 @@ def save(path: str, browser_history: List[Dict]):
 
 
 def should_run() -> bool:
-    INTERVAL = 20  # 20 seconds
     timestamp_file = f"./script_timestamps/{API_NAME}_last_run"
     os.makedirs(os.path.dirname(timestamp_file), exist_ok=True)
     now = datetime.now().timestamp()
@@ -142,12 +151,24 @@ if __name__ == "__main__":
     private_folder = create_private_folder(client.datasite_path)
 
     combined_history = fetch_combined_history()
-    processed_history_private = [split_url(urlstr["url"], private=True) for urlstr in combined_history]
+    processed_history_private = [
+        split_url(urlstr["url"], private=True) for urlstr in combined_history
+    ]
     processed_history_public = [split_url(urlstr["url"]) for urlstr in combined_history]
 
-    filtered_history_private = [urlstr for urlstr in processed_history_private if urlstr["classification"] != "general" and urlstr["scheme"].lower() in {'http', 'https'}]
-    filtered_history_public = [urlstr for urlstr in processed_history_public if urlstr["classification"] != "general" and urlstr["scheme"].lower() in {'http', 'https'}]
-    
+    filtered_history_private = [
+        urlstr
+        for urlstr in processed_history_private
+        if urlstr["classification"] != "general"
+        and urlstr["scheme"].lower() in {"http", "https"}
+    ]
+    filtered_history_public = [
+        urlstr
+        for urlstr in processed_history_public
+        if urlstr["classification"] != "general"
+        and urlstr["scheme"].lower() in {"http", "https"}
+    ]
+
     # Saving public browser history added in it.
     public_file: Path = restricted_public_folder / "browser_history.json"
     save(path=str(public_file), browser_history=filtered_history_public)
