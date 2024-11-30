@@ -8,10 +8,10 @@ import shutil
 from src.utils.config_reader import ConfigReader
 
 
-def fetch_safari_history(path : Path = None) -> List[Dict]:
+def fetch_safari_history() -> List[Dict]:
     if platform.system() != "Darwin":
         return []
-    safari_db_path = path if path else os.path.expanduser("~/Library/Safari/History.db")
+    safari_db_path = os.path.expanduser("~/Library/Safari/History.db")
     if not os.path.exists(safari_db_path):
         print("Safari history database not found.")
         return []
@@ -188,12 +188,12 @@ def fetch_brave_history() -> List[Dict]:
     return history
 
 
-def fetch_combined_history(path: Path = None) -> List[Dict]:
+def fetch_combined_history() -> List[Dict]:
     temp_folder = Path("~/.tmp").expanduser()
     os.makedirs(temp_folder, exist_ok=True)
 
     print("Fetching Safari history...")
-    safari_history = fetch_safari_history(path=path)
+    safari_history = fetch_safari_history()
     print(f"Safari history: {len(safari_history)} items")
 
     print("\nFetching Chrome history...")
