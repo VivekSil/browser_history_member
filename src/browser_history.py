@@ -5,19 +5,22 @@ from datetime import datetime, timedelta
 from typing import List, Dict
 from pathlib import Path
 import shutil
+from src.utils.config_reader import ConfigReader
 
 
-def fetch_safari_history() -> List[Dict]:
+def fetch_safari_history(path : Path = None) -> List[Dict]:
     if platform.system() != "Darwin":
         return []
-    safari_db_path = os.path.expanduser("~/Library/Safari/History.db")
+    safari_db_path = path if path else os.path.expanduser("~/Library/Safari/History.db")
     if not os.path.exists(safari_db_path):
         print("Safari history database not found.")
         return []
 
     # Copying is necessary because databases are locked
     # Copies are intentionally outside syftbox, but we can process them locally
-    temp_db_path = Path("~/.tmp/Safary_History.db").expanduser()
+    config_reader = ConfigReader()
+    temp_data_folder = config_reader.get_temp_data_folder()
+    temp_db_path = Path(f"{temp_data_folder}/Safary_History.db").expanduser()
     shutil.copy(safari_db_path, temp_db_path)
 
     conn = sqlite3.connect(temp_db_path)
@@ -185,12 +188,12 @@ def fetch_brave_history() -> List[Dict]:
     return history
 
 
-def fetch_combined_history() -> List[Dict]:
+def fetch_combined_history(path: Path = None) -> List[Dict]:
     temp_folder = Path("~/.tmp").expanduser()
     os.makedirs(temp_folder, exist_ok=True)
 
     print("Fetching Safari history...")
-    safari_history = fetch_safari_history()
+    safari_history = fetch_safari_history(path=path)
     print(f"Safari history: {len(safari_history)} items")
 
     print("\nFetching Chrome history...")
