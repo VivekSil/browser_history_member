@@ -1,10 +1,8 @@
 from difflib import SequenceMatcher
-from w3lib.url import canonicalize_url
-from urllib.parse import urlparse
 import json
 from pathlib import Path
-from typing import List, Dict
-import pandas as pd
+from typing import List
+
 
 def compare_urls(url1: dict, url2: dict) -> float:
     """
@@ -17,16 +15,30 @@ def compare_urls(url1: dict, url2: dict) -> float:
     Returns:
         float: The average similarity score between the two URLs.
     """
-    key_components = ["scheme", "subdomain", "domain", "tld", "netloc", "path", "query", "fragment", "classification"]
+    key_components = [
+        "scheme",
+        "subdomain",
+        "domain",
+        "tld",
+        "netloc",
+        "path",
+        "query",
+        "fragment",
+        "classification",
+    ]
     results = []
     for key in key_components:
         value = SequenceMatcher(None, url1[key], url2[key]).ratio()
         results.append(value)
-    # TODO: now equal weight is given to all components. We can add weights to each component to give more importance to some components
+    # TODO: now equal weight is given to all components.
+    # We can add weights to each component to give more importance to some components
     avg_result = sum(results) / len(results)
     return avg_result
 
-def compare_browser_histories(path_browser_history1: Path, path_browser_history2: Path) -> List[List[float]]:
+
+def compare_browser_histories(
+    path_browser_history1: Path, path_browser_history2: Path
+) -> List[List[float]]:
     """
     Compares two browser histories and returns a matrix of similarity scores.
 
@@ -35,14 +47,15 @@ def compare_browser_histories(path_browser_history1: Path, path_browser_history2
         path_browser_history2 (Path): The path to the second browser history JSON file.
 
     Returns:
-        List[List[float]]: A matrix of similarity scores between the URLs in the two browser histories.
+        List[List[float]]:
+            A matrix of similarity scores between the URLs in the two browser histories.
     """
     print("Opening browser history files...")
-    with open(path_browser_history1, 'r') as file1:
+    with open(path_browser_history1, "r") as file1:
         browser_history1 = json.load(file1)["browser_history"]
-    with open(path_browser_history2, 'r') as file2:
+    with open(path_browser_history2, "r") as file2:
         browser_history2 = json.load(file2)["browser_history"]
-    
+
     matrix = []
     print("Comparing browser histories...")
     for entry1 in browser_history1:

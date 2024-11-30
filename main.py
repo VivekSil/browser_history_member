@@ -2,20 +2,12 @@ import os
 from pathlib import Path
 import json
 from syftbox.lib import Client, SyftPermission
-import diffprivlib.tools as dp
-import time
-import psutil
-from statistics import mean
 from datetime import datetime, UTC
-import sqlite3
-import platform
-from datetime import datetime, timedelta
 from typing import List, Dict
-import shutil
 from urllib.parse import urlparse, parse_qs
 import tldextract
 
-from src.browser_history import fetch_combined_history, 
+from src.browser_history import fetch_combined_history
 from src.educational_content_classifier import classify_url, get_webpage_title
 from src.utils.config_reader import ConfigReader
 
@@ -24,6 +16,7 @@ config_reader = ConfigReader()
 API_NAME = config_reader.get_api_name()
 AGGREGATOR_DATASITE = config_reader.get_aggregator_datasite()
 INTERVAL = config_reader.get_interval()
+
 
 def split_url(url: List[str], private: bool = False):
     try:

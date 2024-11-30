@@ -1,4 +1,3 @@
-import unittest
 from src.utils.config_reader import ConfigReader
 
 

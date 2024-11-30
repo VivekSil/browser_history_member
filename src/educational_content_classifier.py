@@ -3,8 +3,6 @@ from urllib.parse import parse_qs, urlparse
 
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse
-import re
 from typing import Optional, Dict
 from functools import reduce
 
@@ -285,7 +283,10 @@ def classify_url(url: str):
 
 def create_headers() -> Dict[str, str]:
     return {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        (
+            """User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit"""
+            """/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"""
+        )
     }
 
 
