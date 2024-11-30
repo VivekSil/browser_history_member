@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from typing import List, Dict
 from pathlib import Path
 import shutil
+from src.utils.config_reader import ConfigReader
 
 
 def fetch_safari_history() -> List[Dict]:
@@ -17,7 +18,9 @@ def fetch_safari_history() -> List[Dict]:
 
     # Copying is necessary because databases are locked
     # Copies are intentionally outside syftbox, but we can process them locally
-    temp_db_path = Path("~/.tmp/Safary_History.db").expanduser()
+    config_reader = ConfigReader()
+    temp_data_folder = config_reader.get_temp_data_folder()
+    temp_db_path = Path(f"{temp_data_folder}/Safary_History.db").expanduser()
     shutil.copy(safari_db_path, temp_db_path)
 
     conn = sqlite3.connect(temp_db_path)
