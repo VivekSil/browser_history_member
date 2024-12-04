@@ -83,7 +83,7 @@ def add_title(urlstr):
     return urlstr
 
 
-if __name__ == "__main__":
+def test_main() -> None:
     config_reader = ConfigReader()
     temp_data_folder = config_reader.get_temp_data_folder()
 
