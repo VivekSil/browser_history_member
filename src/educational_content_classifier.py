@@ -129,6 +129,7 @@ def classify_url(url: str):
 
     if domain.startswith("www."):
         domain = domain[4:]
+
     educational_platforms = {
         "coursera.org": "online_course",
         "udemy.com": "online_course",
@@ -157,7 +158,6 @@ def classify_url(url: str):
         r"/documentation",
         r"/workshop",
         r"/training",
-        r"/education",
         r"/lecture",
         r"/class",
         r"/syllabus",
@@ -169,12 +169,8 @@ def classify_url(url: str):
         r"/explained",
         r"/introduction",
         r"/basics",
-        r"/beginner",
         r"/degree",
         r"/assignment",
-        r"/quiz",
-        r"/test",
-        r"/exam",
         r"/practice",
         r"/exercise",
         r"/problem",
@@ -214,7 +210,6 @@ def classify_url(url: str):
         "introduction to",
         "getting started",
         "complete guide",
-        "comprehensive",
         "deep dive",
         "explanation",
         "understand",
@@ -223,10 +218,7 @@ def classify_url(url: str):
         "practice",
         "example",
         "demonstration",
-        "experiment",
         "review",
-        "study with me",
-        "lecture notes",
     ]
 
     def is_educational_video(url_lower, query):
@@ -281,12 +273,19 @@ def classify_url(url: str):
     return "general"
 
 
+
 def create_headers() -> Dict[str, str]:
     return {
-        (
-            """User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit"""
-            """/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"""
-        )
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1"
     }
 
 
@@ -314,11 +313,12 @@ def extract_title(soup: Optional[BeautifulSoup]) -> Optional[str]:
     # From tag
     if soup.title and soup.title.string:
         return clean_title(soup.title.string)
+    
     # From OG
-    og_title = soup.find("meta", property="og:title")
+    og_title = soup.find("meta", {"property": "og:title"})
     if og_title and og_title.get("content"):
         return clean_title(og_title["content"])
-
+    
     # from twitter
     twitter_title = soup.find("meta", {"name": "twitter:title"})
     if twitter_title and twitter_title.get("content"):

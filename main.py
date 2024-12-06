@@ -1,8 +1,9 @@
+import hashlib
 import os
 from pathlib import Path
 import json
 from syftbox.lib import Client, SyftPermission
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from typing import List, Dict
 from urllib.parse import urlparse, parse_qs
 import tldextract
@@ -16,6 +17,7 @@ config_reader = ConfigReader()
 API_NAME = config_reader.get_api_name()
 AGGREGATOR_DATASITE = config_reader.get_aggregator_datasite()
 INTERVAL = config_reader.get_interval()
+ALLOW_TOP = config_reader.get_allow_top()
 
 
 def split_url(url: List[str], private: bool = False):
@@ -32,20 +34,21 @@ def split_url(url: List[str], private: bool = False):
             "tld": extracted.suffix,  # Top-level domain
             "netloc": parsed_url.netloc,
             "path": parsed_url.path,
-            "query": parsed_url.query,
-            "fragment": parsed_url.fragment,
+            # "query": parsed_url.query, # Skip for privacy
+            # "fragment": parsed_url.fragment, # Skip for privacy
             "classification": classify_url(url),
         }
         if private:
             if parsed_url.query:
                 components["query_params"] = parse_qs(parsed_url.query)
 
-        if components["classification"] != "general":
-            components["title"] = get_webpage_title(url)
+        # Skip fetching the title
+        # if components["classification"] != "general":
+        #     components["title"] = get_webpage_title(url)
 
         return components
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": str(e), "url": url}
 
 
 def create_restricted_public_folder(browser_history_path: Path) -> None:
@@ -99,7 +102,7 @@ def create_private_folder(path: Path) -> Path:
 
 
 def save(path: str, browser_history: List[Dict]):
-    current_time = datetime.now(UTC)
+    current_time = datetime.now(timezone.utc)
     timestamp_str = current_time.strftime("%Y-%m-%d %H:%M:%S")
 
     with open(path, "w") as json_file:
@@ -128,7 +131,45 @@ def should_run() -> bool:
         return True
     return False
 
-
+def hash_url(domain):
+    """
+    Creates a SHA-256 hash of a domain string after normalizing it.
+    
+    Args:
+        domain: A string representing a domain name or URL
+        
+    Returns:
+        str: A hexadecimal string representation of the SHA-256 hash,
+             or None if the input is invalid
+    """
+    try:
+        # Handle empty or None input
+        if not domain:
+            return None
+            
+        # Normalize the domain
+        domain = domain.lower().strip()
+        
+        # If it's a full URL, extract just the domain
+        if '://' in domain:
+            parsed = urlparse(domain)
+            domain = parsed.netloc
+            
+        # Remove www. prefix if present
+        if domain.startswith('www.'):
+            domain = domain[4:]
+            
+        # Remove trailing dots
+        domain = domain.rstrip('.')
+        
+        # Create hash
+        hash_object = hashlib.sha256(domain.encode())
+        return hash_object.hexdigest()
+        
+    except Exception as e:
+        print(f"Error hashing domain {domain}: {str(e)}")
+        return None
+    
 if __name__ == "__main__":
     if not should_run():
         print(f"Skipping {API_NAME}, not enough time has passed.")
@@ -144,17 +185,9 @@ if __name__ == "__main__":
     private_folder = create_private_folder(client.datasite_path)
 
     combined_history = fetch_combined_history()
-    processed_history_private = [
-        split_url(urlstr["url"], private=True) for urlstr in combined_history
-    ]
     processed_history_public = [split_url(urlstr["url"]) for urlstr in combined_history]
 
-    filtered_history_private = [
-        urlstr
-        for urlstr in processed_history_private
-        if urlstr["classification"] != "general"
-        and urlstr["scheme"].lower() in {"http", "https"}
-    ]
+    # Filter out non-educational URLs
     filtered_history_public = [
         urlstr
         for urlstr in processed_history_public
@@ -163,9 +196,19 @@ if __name__ == "__main__":
     ]
 
     # Saving public browser history added in it.
-    public_file: Path = restricted_public_folder / "browser_history.json"
-    save(path=str(public_file), browser_history=filtered_history_public)
+    file_enc: Path = restricted_public_folder / "browser_history_enc.json"
+    file_clear: Path = restricted_public_folder / "browser_history_clear.json"
 
-    # Saving the private browser history.
-    private_file: Path = private_folder / "browser_history.json"
-    save(path=str(private_file), browser_history=filtered_history_private)
+    # Keep only information we need to save
+    history_to_file = [
+        urlstr["netloc"]
+        for urlstr in filtered_history_public
+    ]
+    hash_history = [hash_url(url) for url in history_to_file]
+    
+    # Save the hashed history and the clear history if allowed
+    save(path=str(file_enc), browser_history=hash_history)
+
+    if ALLOW_TOP:
+        save(path=str(file_clear), browser_history=history_to_file)
+
