@@ -32,3 +32,6 @@ class ConfigReader:
 
     def get_interval(self) -> int:
         return int(self._config["API_INFO"]["INTERVAL"])
+
+    def get_allow_top(self) -> bool:
+        return self._config["API_INFO"].getboolean("ALLOW_TOP")
