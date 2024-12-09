@@ -9,7 +9,7 @@ from urllib.parse import urlparse, parse_qs
 import tldextract
 
 from src.browser_history import fetch_combined_history
-from src.educational_content_classifier import classify_url, get_webpage_title
+from src.educational_content_classifier import classify_url
 from src.utils.config_reader import ConfigReader
 
 config_reader = ConfigReader()
@@ -49,6 +49,36 @@ def split_url(url: List[str], private: bool = False):
         return components
     except Exception as e:
         return {"error": str(e), "url": url}
+
+
+def get_paper_stats(filtered_urls: List[Dict[str,str]]) -> List[str]:
+    cs_research_domains = [
+        "arxiv.org",
+        "ieee.org",
+        "acm.org",
+        "neurips.cc",
+        "icml.cc",
+        "iclr.cc",
+        "aaai.org",
+        "ijcai.org",
+        "usenix.org","aclweb.org",
+        "openreview.net",
+        "dl.acm.org",
+        "computer.org",
+        "researchgate.net","scholar.google.com",
+        "semantic.scholar.org",
+        "dblp.org"
+        ]
+    cs_paper_list = []
+    for url in filtered_urls:
+        if url["netloc"].startswith("www."):
+            netloc = url["netloc"][4:]
+        else:
+            netloc = url["netloc"]
+
+        if netloc in cs_research_domains:
+            cs_paper_list.append(netloc+url["path"])
+    return cs_paper_list
 
 
 def create_restricted_public_folder(browser_history_path: Path) -> None:
@@ -112,6 +142,18 @@ def save(path: str, browser_history: List[Dict]):
             indent=4,
         )
 
+def save_papers(path: str, paper_list: List[str]):
+    current_time = datetime.now(timezone.utc)
+    timestamp_str = current_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    with open(path, "w") as json_file:
+        json.dump(
+            {"papers": paper_list, "timestamp": timestamp_str},
+            json_file,
+            indent=4,
+        )
+
+
 
 def should_run() -> bool:
     timestamp_file = f"./script_timestamps/{API_NAME}_last_run"
@@ -134,10 +176,10 @@ def should_run() -> bool:
 def hash_url(domain):
     """
     Creates a SHA-256 hash of a domain string after normalizing it.
-    
+
     Args:
         domain: A string representing a domain name or URL
-        
+
     Returns:
         str: A hexadecimal string representation of the SHA-256 hash,
              or None if the input is invalid
@@ -146,30 +188,30 @@ def hash_url(domain):
         # Handle empty or None input
         if not domain:
             return None
-            
+
         # Normalize the domain
         domain = domain.lower().strip()
-        
+
         # If it's a full URL, extract just the domain
         if '://' in domain:
             parsed = urlparse(domain)
             domain = parsed.netloc
-            
+
         # Remove www. prefix if present
         if domain.startswith('www.'):
             domain = domain[4:]
-            
+
         # Remove trailing dots
         domain = domain.rstrip('.')
-        
+
         # Create hash
         hash_object = hashlib.sha256(domain.encode())
         return hash_object.hexdigest()
-        
+
     except Exception as e:
         print(f"Error hashing domain {domain}: {str(e)}")
         return None
-    
+
 if __name__ == "__main__":
     if not should_run():
         print(f"Skipping {API_NAME}, not enough time has passed.")
@@ -195,9 +237,13 @@ if __name__ == "__main__":
         and urlstr["scheme"].lower() in {"http", "https"}
     ]
 
+    # Get the list of research papers browsed by the user
+    cs_paper_list = get_paper_stats(filtered_history_public)
+
     # Saving public browser history added in it.
     file_enc: Path = restricted_public_folder / "browser_history_enc.json"
     file_clear: Path = restricted_public_folder / "browser_history_clear.json"
+    file_papers: Path = restricted_public_folder / "paper_stats.json"
 
     # Keep only information we need to save
     history_to_file = [
@@ -205,10 +251,10 @@ if __name__ == "__main__":
         for urlstr in filtered_history_public
     ]
     hash_history = [hash_url(url) for url in history_to_file]
-    
+
     # Save the hashed history and the clear history if allowed
     save(path=str(file_enc), browser_history=hash_history)
 
     if ALLOW_TOP:
         save(path=str(file_clear), browser_history=history_to_file)
-
+        save_papers(path=str(file_papers), paper_list=cs_paper_list)
