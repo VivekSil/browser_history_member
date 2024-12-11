@@ -273,11 +273,16 @@ def classify_url(url: str):
     return "general"
 
 
-
 def create_headers() -> Dict[str, str]:
     return {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/91.0.4472.124 Safari/537.36"
+        ),
+        "Accept": (
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
+        ),
         "Accept-Language": "en-US,en;q=0.5",
         "Accept-Encoding": "gzip, deflate, br",
         "Connection": "keep-alive",
@@ -285,7 +290,7 @@ def create_headers() -> Dict[str, str]:
         "Sec-Fetch-Dest": "document",
         "Sec-Fetch-Mode": "navigate",
         "Sec-Fetch-Site": "none",
-        "Sec-Fetch-User": "?1"
+        "Sec-Fetch-User": "?1",
     }
 
 
@@ -313,12 +318,12 @@ def extract_title(soup: Optional[BeautifulSoup]) -> Optional[str]:
     # From tag
     if soup.title and soup.title.string:
         return clean_title(soup.title.string)
-    
+
     # From OG
     og_title = soup.find("meta", {"property": "og:title"})
     if og_title and og_title.get("content"):
         return clean_title(og_title["content"])
-    
+
     # from twitter
     twitter_title = soup.find("meta", {"name": "twitter:title"})
     if twitter_title and twitter_title.get("content"):

@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import hashlib
 import json
 from datetime import datetime
 from typing import List, Dict
@@ -111,7 +112,7 @@ def test_main() -> None:
             and urlstr["scheme"].lower() in {"http", "https"}
         ]
         filtered_history_public = [
-            urlstr # get_hash(urlstr["domain"])
+            urlstr  # get_hash(urlstr["domain"])
             for urlstr in processed_history_public
             if urlstr["classification"] != "general"
             and urlstr["scheme"].lower() in {"http", "https"}
