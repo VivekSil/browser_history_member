@@ -40,7 +40,7 @@ This project provides tools for analyzing, classifying, and comparing browser hi
 ### Prerequisites
 
 - Python 3.8+ (Python 3.12 highly suggested)
-- [SyftBox](https://github.com/OpenMined/syftbox) installed and configured
+- [SyftBox](https://syftbox.openmined.org) installed and configured
 
 
 ## How to Locally Test the Code
