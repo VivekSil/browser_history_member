@@ -6,4 +6,3 @@ logs/
 __pycache__/
 script_timestamps/
 .DS_Store
-.pre-commit-config.yaml
