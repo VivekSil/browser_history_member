@@ -25,7 +25,7 @@ This project provides tools for analyzing, classifying, and comparing browser hi
 
 ## Setup and Participate
 
-1. Run SyftBox
+1. Run [SyftBox](https://github.com/OpenMined/syft)
   ```bash
   curl -LsSf https://syftbox.openmined.org/install.sh | sh
   ```
@@ -76,6 +76,14 @@ To run tests locally, follow these steps:
 
 
 ## Workflow in SyftBox
+```
+ ____         __ _   ____
+/ ___| _   _ / _| |_| __ )  _____  __
+\___ \| | | | |_| __|  _ \ / _ \ \/ /
+ ___) | |_| |  _| |_| |_) | (_) >  <
+|____/ \__, |_|  \__|____/ \___/_/\_\
+       |___/
+```
 
 1. The [`browser_history_member`](https://github.com/VivekSil/browser_history_member) app writes intermediary outputs to a folder where only the client and the aggregator has access.
 2. The aggregator app, [`browser_history_aggregator`](https://github.com/IrinaMBejan/browser_history_aggregator), computes the final results and pushes them to a file where they can be used by the static website. Only one person needs to run this app.
