@@ -48,7 +48,6 @@ This project provides tools for analyzing, classifying, and comparing browser hi
 To run tests locally, follow these steps:
 
 1. **Create and activate a virtual environment**:
-   - It is highly recommended to use Python version `3.12`.
    - Create a virtual environment:
      ```sh
      python3 -m venv .venv
@@ -74,3 +73,10 @@ To run tests locally, follow these steps:
      ```sh
      python -m pytest test/
      ```
+
+
+## Workflow in SyftBox
+
+1. The [`browser_history_member`](https://github.com/VivekSil/browser_history_member) app writes intermediary outputs to a folder where only the client and the aggregator has access.
+2. The aggregator app, [`browser_history_aggregator`](https://github.com/IrinaMBejan/browser_history_aggregator), computes the final results and pushes them to a file where they can be used by the static website. Only one person needs to run this app.
+3. A static website reads the final results file and renders the view at this [link](https://syftbox.openmined.org/datasites/irina@openmined.org/browser_history_agg/).
