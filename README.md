@@ -29,15 +29,17 @@ This project provides tools for analyzing, classifying, and comparing browser hi
   ```
 
 2. Install this app:
+  - open a new terminal window
+  - install the app by running the bash commands as follows:
   ```bash
   syftbox app install VivekSil/browser_history_member
   ```
 
 ### Prerequisites
 
-- Python 3.8+
+- Python 3.8+ (Python 3.12 highly suggested)
 - [SyftBox](https://github.com/OpenMined/syftbox) installed and configured
 
 ## How locally test the code
-1. create and activate an environment with `requirements.txt` and `python` (highly suggested `3.12` version!)
+1. create and activate an environment with `requirements.txt` and `python` (highly suggested version = `3.12`)
 2. `python -m pytest test/` to run all tests
