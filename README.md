@@ -7,9 +7,9 @@ home: https://syftbox.openmined.org/datasites/irina@openmined.org/browser_histor
 icon: https://raw.githubusercontent.com/OpenMined/ftop/refs/heads/main/icon.png
 ---
 
-![Python](https://img.shields.io/badge/python-3.8%2B-blue)
-
 # Browser History Analysis and Classification
+
+![Python](https://img.shields.io/badge/python-3.8%2B-blue)
 
 This project provides tools for analyzing, classifying, and comparing browser history data, focusing on privacy and educational content. It integrates privacy-preserving techniques and classification methods to manage browser history data securely.
 
