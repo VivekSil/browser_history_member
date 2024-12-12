@@ -50,8 +50,7 @@ def split_url(url: List[str], private: bool = False):
     except Exception as e:
         return {"error": str(e), "url": url}
 
-
-def get_paper_stats(filtered_urls: List[Dict[str,str]]) -> List[str]:
+def get_paper_stats(filtered_urls: List[Dict[str, str]]) -> List[str]:
     cs_research_domains = [
         "arxiv.org",
         "ieee.org",
@@ -61,23 +60,44 @@ def get_paper_stats(filtered_urls: List[Dict[str,str]]) -> List[str]:
         "iclr.cc",
         "aaai.org",
         "ijcai.org",
-        "usenix.org","aclweb.org",
+        "usenix.org",
+        "aclweb.org",
         "openreview.net",
         "dl.acm.org",
         "computer.org",
-        "researchgate.net","scholar.google.com",
         "semantic.scholar.org",
-        "dblp.org"
-        ]
+        "dblp.org",
+        "researchgate.net" 
+    ]
+    
     cs_paper_list = []
     for url in filtered_urls:
         if url["netloc"].startswith("www."):
             netloc = url["netloc"][4:]
         else:
             netloc = url["netloc"]
-
+        
         if netloc in cs_research_domains:
-            cs_paper_list.append(netloc+url["path"])
+            path = url["path"].lower()
+            
+            is_valid_paper = any([
+                (netloc == "arxiv.org" and path.startswith("/pdf/")),
+                (netloc == "researchgate.net" and path.startswith("/publication/")),
+                (netloc not in ["researchgate.net", "arxiv.org"] and 
+                 not any(skip in path for skip in [
+                     "search", 
+                     "profile",
+                     "citations",
+                     "author",
+                     "browse",
+                     "/",
+                     "index"
+                 ]))
+            ])
+            
+            if is_valid_paper:
+                cs_paper_list.append(netloc + url["path"])
+    
     return cs_paper_list
 
 
