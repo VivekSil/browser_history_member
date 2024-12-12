@@ -273,6 +273,7 @@ def classify_url(url: str):
     return "general"
 
 
+
 def create_headers() -> Dict[str, str]:
     return {
         "User-Agent": (
@@ -290,7 +291,7 @@ def create_headers() -> Dict[str, str]:
         "Sec-Fetch-Dest": "document",
         "Sec-Fetch-Mode": "navigate",
         "Sec-Fetch-Site": "none",
-        "Sec-Fetch-User": "?1",
+        "Sec-Fetch-User": "?1"
     }
 
 
@@ -323,7 +324,7 @@ def extract_title(soup: Optional[BeautifulSoup]) -> Optional[str]:
     og_title = soup.find("meta", {"property": "og:title"})
     if og_title and og_title.get("content"):
         return clean_title(og_title["content"])
-
+    
     # from twitter
     twitter_title = soup.find("meta", {"name": "twitter:title"})
     if twitter_title and twitter_title.get("content"):
